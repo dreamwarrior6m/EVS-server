@@ -5,7 +5,6 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
-
 //middleware
 app.use(
   cors({
@@ -13,6 +12,7 @@ app.use(
       "http://localhost:3000",
       "http://localhost:5173",
       "https://electronic-voting-system-one.vercel.app",
+      "https://electronic-voting-system-beta.vercel.app",
     ],
   })
 );
@@ -36,6 +36,7 @@ async function run() {
 
     const userCollection = client.db("dvsDB").collection("users");
     const candidateCollection = client.db("dvsDB").collection("candidate");
+    const createVoteCollection = client.db("dvsDB").collection("create-vote");
 
     app.post("/users", async (req, res) => {
       const newUser = req.body;
@@ -61,6 +62,17 @@ async function run() {
       res.send(cursor);
     });
 
+    // create-vor realeted api
+    app.post("/create-vote", async (req, res) => {
+      const newCreateVote = req.body;
+      const result = await createVoteCollection.insertOne(newCreateVote);
+      res.send(result);
+    });
+
+    app.get("/create-vote", async (req, res) => {
+      const cursor = await createVoteCollection.find().toArray();
+      res.send(cursor);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
