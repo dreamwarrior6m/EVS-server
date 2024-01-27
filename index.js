@@ -1,21 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://electronic-voting-system-one.vercel.app",
-      "https://electronic-voting-system-beta.vercel.app",
-    ],
-  })
-);
+app.use(cors())
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rsjkylo.mongodb.net/?retryWrites=true&w=majority`;
@@ -44,9 +35,17 @@ async function run() {
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     });
+    
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id
+      console.log(id)
+      const result = await userCollection.findOne({_id: new ObjectId(id)})
       res.send(result);
     });
 
@@ -56,6 +55,20 @@ async function run() {
       const result = await candidateCollection.insertOne(newCandidate);
       res.send(result);
     });
+    // user deleted
+    app.delete('/users/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await userCollection.deleteOne(query)
+      res.send(result)
+    })
+    // candidate deleted
+    app.delete('/candidate/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await candidateCollection.deleteOne(query)
+      res.send(result)
+    })
 
     app.get("/candidate", async (req, res) => {
       const cursor = await candidateCollection.find().toArray();
