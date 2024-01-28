@@ -41,6 +41,20 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
+    // user verify for admin
+    app.patch('/users/verify/:id',async(req,res)=>{
+      const id = req.params.id
+      const query = {_id : new ObjectId(id)}
+      console.log(query)
+      const doc = {
+        $set:{
+          verify : 'true'
+        }
+      }
+      const result = await userCollection.updateOne(query,doc)
+      console.log(result)
+      res.send({message:true})
+    })
 
     app.get("/users/:id", async (req, res) => {
       const id = req.params.id
@@ -51,9 +65,21 @@ async function run() {
 
     //candidate releted api
     app.post("/candidate", async (req, res) => {
-      const newCandidate = req.body;
-      const result = await candidateCollection.insertOne(newCandidate);
-      res.send(result);
+      const isExcits = await candidateCollection.findOne({
+        $or:
+        [
+        {candidateEmail: req.body.candidateEmail},
+        {candidateID: req.body.candidateID}
+        ]
+      })
+      if(isExcits){
+        return res.status(400).send({message:"This Candidate is wrong"})
+      }
+      else{
+        const newCandidate = req.body;
+        const result = await candidateCollection.insertOne(newCandidate);
+        res.send(result);
+      }
     });
     // user deleted
     app.delete('/users/:id',async(req,res)=>{
@@ -69,7 +95,6 @@ async function run() {
       const result = await candidateCollection.deleteOne(query)
       res.send(result)
     })
-
     app.get("/candidate", async (req, res) => {
       const cursor = await candidateCollection.find().toArray();
       res.send(cursor);
@@ -86,6 +111,8 @@ async function run() {
       const cursor = await createVoteCollection.find().toArray();
       res.send(cursor);
     });
+
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
