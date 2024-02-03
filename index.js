@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     const userCollection = client.db("dvsDB").collection("users");
     const candidateCollection = client.db("dvsDB").collection("candidate");
@@ -31,7 +31,6 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const newUser = req.body;
-      console.log("new user:", newUser);
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     });
@@ -41,6 +40,12 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+    
     // user verify for admin
     app.patch('/users/verify/:id',async(req,res)=>{
       const id = req.params.id
@@ -52,13 +57,11 @@ async function run() {
         }
       }
       const result = await userCollection.updateOne(query,doc)
-      console.log(result)
       res.send({message:true})
     })
 
     app.get("/users/:id", async (req, res) => {
       const id = req.params.id
-      console.log(id)
       const result = await userCollection.findOne({_id: new ObjectId(id)})
       res.send(result);
     });
@@ -117,7 +120,6 @@ async function run() {
         const allUser = await userCollection.find({}).toArray();
         const page = parseInt(req.query.page);
         const limit = parseInt(req.query.limit);
-    
         const startIndex = (page - 1) * limit;
         const lastIndex = page * limit;
     
