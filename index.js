@@ -47,17 +47,29 @@ async function run() {
     });
     
     // user verify for admin
-    app.patch('/users/verify/:id',async(req,res)=>{
+    app.patch('/users/isRole/:id',async(req,res)=>{
       const id = req.params.id
       const query = {_id : new ObjectId(id)}
       console.log(query)
       const doc = {
         $set:{
-          verify : 'true'
+          isRole : 'Admin'
         }
       }
       const result = await userCollection.updateOne(query,doc)
-      res.send({message:true})
+      res.send(result)
+    })
+    app.patch('/isRole/:email',async(req,res)=>{
+      const email = req.params.email
+      const query = {email:email}
+      console.log(query)
+      const doc = {
+        $set:{
+          isRole : 'Moderator'
+        }
+      }
+      const result = await userCollection.updateOne(query,doc)
+      res.send(result)
     })
 
     app.get("/users/:id", async (req, res) => {
