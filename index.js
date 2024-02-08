@@ -134,7 +134,6 @@ async function run() {
         const limit = parseInt(req.query.limit);
         const startIndex = (page - 1) * limit;
         const lastIndex = page * limit;
-    
         const results = {};
         results.totalUser = allUser.length;
         results.pageCount = Math.ceil(allUser.length / limit);
