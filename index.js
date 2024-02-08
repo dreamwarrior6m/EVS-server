@@ -67,6 +67,36 @@ async function run() {
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
     });
 
+    // app.patch("/candidate/:id", async (req, res) => {
+    //   const data = req.params;
+    //   const data2 = req.body;
+    //   // console.log(data2)
+    //   const filter = { _id: new ObjectId(data.id) };
+    //   // console.log(filter);
+    //   const updateDoc = {
+    //     $set: {
+    //       voteCount: data2.updateVoteCount2,
+    //     },
+    //   };
+    //   const result = await candidateCollection.updateOne(filter, updateDoc);
+    //   res.send(result);
+    // });
+
+    app.patch("/users/:id", async (req, res) => {
+      const data = req.params;
+      const data2 = req.body;
+      console.log(data2);
+      const filter = { _id: new ObjectId(data.id) };
+      console.log(filter);
+      const updateDoc = {
+        $set: {
+          isRole: data2.updateIsRole,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     //candidate releted api
     app.post("/candidate", async (req, res) => {
       const isExcits = await candidateCollection.findOne({
