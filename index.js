@@ -47,26 +47,25 @@ async function run() {
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
-    
+
     // user verify for admin
     app.patch("/users/verify/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       console.log(query);
       const doc = {
-
-        $set:{
-          verify : 'true'
-        }
-      }
-      const result = await userCollection.updateOne(query,doc)
-      res.send({message:true})
-    })
+        $set: {
+          verify: "true",
+        },
+      };
+      const result = await userCollection.updateOne(query, doc);
+      res.send({ message: true });
+    });
 
     app.get("/users/:id", async (req, res) => {
-      const id = req.params.id
-      const result = await userCollection.findOne({_id: new ObjectId(id)})
-
+      const id = req.params.id;
+      const result = await userCollection.findOne({ _id: new ObjectId(id) });
+    });
 
     //candidate releted api
     app.post("/candidate", async (req, res) => {
@@ -175,6 +174,14 @@ async function run() {
     app.get("/create-vote", async (req, res) => {
       const cursor = await createVoteCollection.find().toArray();
       res.send(cursor);
+    });
+
+    //Specific Vote Delete
+    app.delete("/create-vote/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await createVoteCollection.deleteOne(query);
+      res.send(result);
     });
 
     app.get("/create-vote/:name", async (req, res) => {
