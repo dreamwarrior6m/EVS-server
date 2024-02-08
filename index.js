@@ -184,6 +184,29 @@ async function run() {
       res.send(result);
     });
 
+    //Specific Vote Details Update
+    app.put("/create-vote/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const obj = req.body;
+      console.log(obj)
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateElection = {
+        $set: { 
+          OrganizatonName: obj.OrganizatonName,
+          Type: obj.Type,
+          endDate: obj.endDate,
+          endTime: obj.endTime,
+          name: obj.name,
+          photo: obj.photo,
+          startDate: obj.startDate,
+          startTime:obj.startTime,
+        },
+      };
+      const result = await createVoteCollection.updateOne(query, updateElection, options);
+      res.send(result);
+    });
+
     app.get("/create-vote/:name", async (req, res) => {
       const name = req.params.name;
       const result = await createVoteCollection.findOne({
