@@ -47,10 +47,10 @@ async function run() {
     });
     
     // user verify for admin
-    app.patch('/users/isRole/:id',async(req,res)=>{
-      const id = req.params.id
-      const query = {_id : new ObjectId(id)}
-      console.log(query)
+    app.patch("/users/isRole/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
       const doc = {
         $set:{
           isRole : 'Admin'
@@ -59,19 +59,36 @@ async function run() {
       const result = await userCollection.updateOne(query,doc)
       res.send(result)
     })
-    app.patch('/isRole/:email',async(req,res)=>{
-      const email = req.params.email
-      const query = {email:email}
-      console.log(query)
-      const doc = {
-        $set:{
-          isRole : 'Moderator'
-        }
-      }
-      const result = await userCollection.updateOne(query,doc)
-      res.send(result)
-    })
 
+    app.patch("/users/verify/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const doc = {
+        $set: {
+          verify: "true",
+        },
+      };
+      const result = await userCollection.updateOne(query, doc);
+      res.send(result);
+    });
+
+    app.patch("/users/:id", async (req, res) => {
+      const data = req.params;
+      const data2 = req.body;
+      console.log(data2);
+      const filter = { _id: new ObjectId(data.id) };
+      console.log(filter);
+      const updateDoc = {
+        $set: {
+          isRole: data2.updateIsRole,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    
     app.get("/users/:id", async (req, res) => {
       const id = req.params.id
       const result = await userCollection.findOne({_id: new ObjectId(id)})
