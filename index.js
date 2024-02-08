@@ -49,6 +49,20 @@ async function run() {
     });
 
     // user verify for admin
+    
+    app.patch("/users/isRole/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const doc = {
+        $set:{
+          isRole : 'Admin'
+        }
+      }
+      const result = await userCollection.updateOne(query,doc)
+      res.send(result)
+    })
+
     app.patch("/users/verify/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -59,9 +73,25 @@ async function run() {
         },
       };
       const result = await userCollection.updateOne(query, doc);
-      res.send({ message: true });
+      res.send(result);
     });
 
+    app.patch("/users/:id", async (req, res) => {
+      const data = req.params;
+      const data2 = req.body;
+      console.log(data2);
+      const filter = { _id: new ObjectId(data.id) };
+      console.log(filter);
+      const updateDoc = {
+        $set: {
+          isRole: data2.updateIsRole,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    
     app.get("/users/:id", async (req, res) => {
       const id = req.params.id;
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
@@ -254,7 +284,6 @@ async function run() {
 
         const startIndex = (page - 1) * limit;
         const lastIndex = page * limit;
-
         const results = {};
         results.totalUser = allUser.length;
         results.pageCount = Math.ceil(allUser.length / limit);
