@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const userCollection = client.db("dvsDB").collection("users");
     const candidateCollection = client.db("dvsDB").collection("candidate");
@@ -31,6 +31,7 @@ async function run() {
     const participateVoteCollection = client
       .db("dvsDB")
       .collection("participate");
+    const createPollCollection = client.db("dvsDB").collection("create-poll")
 
     app.post("/users", async (req, res) => {
       const newUser = req.body;
@@ -218,7 +219,7 @@ async function run() {
       console.log(filter);
       const updateDoc = {
         $set: {
-          voterEmail: data2.updateVoterEmail,
+          position: data2.isSystemRunning,
         },
       };
       const result = await createVoteCollection.updateOne(filter, updateDoc);
@@ -274,6 +275,19 @@ async function run() {
       });
       res.send(result);
     });
+
+    // create Poll
+
+    app.post("/create-poll", async(req, res)=>{
+      const newCreatePoll = req.body;
+      const result = await createPollCollection.insertOne(newCreatePoll);
+      res.send(result);
+    })
+
+    app.get("/create-poll", async(req, res)=>{
+      const cursor = await createPollCollection.find().toArray();
+      res.send(cursor);
+    })
 
     // pagination
     app.get("/paginatedUsers", async (req, res) => {
