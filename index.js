@@ -31,6 +31,11 @@ async function run() {
     const CandidateUnderUserCollection = client.db("dvsDB").collection("CandiateUnderUser");
     const participateVoteCollection = client.db("dvsDB").collection("participate");
     const createPollCollection = client.db("dvsDB").collection("create-poll")
+    const pollAnsCollection = client.db("dvsDB").collection("poll-ans");
+    const pollParticipateCollection = client
+      .db("dvsDB")
+      .collection("poll-participate");
+
 
     app.post("/users", async (req, res) => {
       const newUser = req.body;
@@ -49,19 +54,19 @@ async function run() {
     });
 
     // user verify for admin
-    
+
     app.patch("/users/isRole/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       console.log(query);
       const doc = {
-        $set:{
-          isRole : 'Admin'
-        }
-      }
-      const result = await userCollection.updateOne(query,doc)
-      res.send(result)
-    })
+        $set: {
+          isRole: "Admin",
+        },
+      };
+      const result = await userCollection.updateOne(query, doc);
+      res.send(result);
+    });
 
     app.patch("/users/verify/:id", async (req, res) => {
       const id = req.params.id;
@@ -91,7 +96,6 @@ async function run() {
       res.send(result);
     });
 
-    
     app.get("/users/:id", async (req, res) => {
       const id = req.params.id;
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
@@ -194,14 +198,7 @@ async function run() {
       const result = await participateVoteCollection.find().toArray();
       res.send(result);
     });
-
-    // app.post("/users", async (req, res) => {
-    //   const newUser = req.body;
-    //   console.log("new user:", newUser);
-    //   const result = await userCollection.insertOne(newUser);
-    //   res.send(result);
-    // });
-
+    
     app.post("/participate", async (req, res) => {
       const newParticipate = req.body;
       console.log("newParticipate", newParticipate);
@@ -269,11 +266,11 @@ async function run() {
     app.put("/create-vote/update/:id", async (req, res) => {
       const id = req.params.id;
       const obj = req.body;
-      console.log(obj)
+      console.log(obj);
       const query = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateElection = {
-        $set: { 
+        $set: {
           OrganizatonName: obj.OrganizatonName,
           Type: obj.Type,
           endDate: obj.endDate,
@@ -281,10 +278,14 @@ async function run() {
           name: obj.name,
           photo: obj.photo,
           startDate: obj.startDate,
-          startTime:obj.startTime,
+          startTime: obj.startTime,
         },
       };
-      const result = await createVoteCollection.updateOne(query, updateElection, options);
+      const result = await createVoteCollection.updateOne(
+        query,
+        updateElection,
+        options
+      );
       res.send(result);
     });
 
@@ -298,16 +299,63 @@ async function run() {
 
     // create Poll
 
-    app.post("/create-poll", async(req, res)=>{
+    app.post("/create-poll", async (req, res) => {
       const newCreatePoll = req.body;
       const result = await createPollCollection.insertOne(newCreatePoll);
       res.send(result);
-    })
+    });
 
-    app.get("/create-poll", async(req, res)=>{
+    app.get("/create-poll", async (req, res) => {
       const cursor = await createPollCollection.find().toArray();
       res.send(cursor);
-    })
+    });
+
+    // poll-ans
+    app.post("/poll-ans", async (req, res) => {
+      const newPollAns = req.body;
+      const result = await pollAnsCollection.insertOne(newPollAns);
+      res.send(result);
+    });
+
+    app.get("/poll-ans", async (req, res) => {
+      const cursor = await pollAnsCollection.find().toArray();
+      res.send(cursor);
+    });
+
+    app.get("/poll-ans/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await pollAnsCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    app.patch("/poll-ans/:id", async (req, res) => {
+      const data = req.params.id;
+      const data2 = req.body;
+      console.log(data2);
+      const filter = { _id: new ObjectId(data) };
+      console.log(filter);
+      const updateDoc = {
+        $set: {
+          pollVoteCount: data2?.updataVoteCount,
+        },
+      };
+      const result = await pollAnsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    //poll participate user
+    app.post("/poll-participate", async (req, res) => {
+      const newPollParticipate = req.body;
+      const result = await pollParticipateCollection.insertOne(
+        newPollParticipate
+      );
+      res.send(result);
+    });
+
+    app.get("/poll-participate", async (req, res) => {
+      const cursor = await pollParticipateCollection.find().toArray();
+      res.send(cursor);
+    });
 
     // pagination
     app.get("/paginatedUsers", async (req, res) => {
