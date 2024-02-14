@@ -28,9 +28,8 @@ async function run() {
     const userCollection = client.db("dvsDB").collection("users");
     const candidateCollection = client.db("dvsDB").collection("candidate");
     const createVoteCollection = client.db("dvsDB").collection("create-vote");
-    const participateVoteCollection = client
-      .db("dvsDB")
-      .collection("participate");
+    const CandidateUnderUserCollection = client.db("dvsDB").collection("CandiateUnderUser");
+    const participateVoteCollection = client.db("dvsDB").collection("participate");
     const createPollCollection = client.db("dvsDB").collection("create-poll")
 
     app.post("/users", async (req, res) => {
@@ -235,6 +234,27 @@ async function run() {
     app.get("/create-vote", async (req, res) => {
       const cursor = await createVoteCollection.find().toArray();
       res.send(cursor);
+    });
+    app.get("/create-vote/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await createVoteCollection.findOne(query);
+      res.send(result);
+    });
+    app.post("/candidate/under/users", async(req,res)=>{
+      const body = req.body;
+      console.log(body)
+      const result = await CandidateUnderUserCollection.insertOne(body);
+      res.send(result)
+    })
+    app.get("/candidate/under/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await CandidateUnderUserCollection.find({ email: email }).toArray();
+      res.send(result);
+    });
+    app.get("/candidate/under/users", async (req, res) => {
+        const cursor = await CandidateUnderUserCollection.find().toArray();
+        res.send(cursor);
     });
 
     //Specific Vote Delete
