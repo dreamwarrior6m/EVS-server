@@ -222,10 +222,20 @@ async function run() {
       res.send(result);
     });
 
+    // app.post("/create-vote", async (req, res) => {
+    //   const newCreateVote = req.body;
+    //   const result = await createVoteCollection.insertOne(newCreateVote);
+    //   res.send(result);
+    // });
     app.post("/create-vote", async (req, res) => {
-      const newCreateVote = req.body;
-      const result = await createVoteCollection.insertOne(newCreateVote);
-      res.send(result);
+      const isExcits = await createVoteCollection.findOne({ name: req.body.name });
+      if (isExcits) {
+        return res.status(400).send({ message: "This Candidate is wrong" });
+      } else {
+        const newCandidate = req.body;
+        const result = await createVoteCollection.insertOne(newCandidate);
+        res.send(result);
+      }
     });
 
     app.get("/create-vote", async (req, res) => {
@@ -244,14 +254,32 @@ async function run() {
       const result = await CandidateUnderUserCollection.insertOne(body);
       res.send(result)
     })
-    app.get("/candidate/under/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await CandidateUnderUserCollection.find({ email: email }).toArray();
+    app.get("/candidate/under/:CandidateEmail", async (req, res) => {
+      const email = req.params.CandidateEmail;
+      const result = await CandidateUnderUserCollection.find({ CandidateEmail: email }).toArray();
       res.send(result);
     });
-    app.get("/candidate/under/users", async (req, res) => {
+    app.get("/candidateUnderVoter", async (req, res) => {
         const cursor = await CandidateUnderUserCollection.find().toArray();
         res.send(cursor);
+    });
+    app.delete("/candidateUnderVoter/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await CandidateUnderUserCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.patch("/candidateUnderVoter/verify/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const doc = {
+        $set: {
+          verify: "true",
+        },
+      };
+      const result = await CandidateUnderUserCollection.updateOne(query, doc);
+      res.send(result);
     });
 
     //Specific Vote Delete
