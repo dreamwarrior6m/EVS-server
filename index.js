@@ -74,7 +74,7 @@ async function run() {
       console.log(query);
       const doc = {
         $set: {
-          verify: "true",
+          isverify: "true",
         },
       };
       const result = await userCollection.updateOne(query, doc);
@@ -249,7 +249,7 @@ async function run() {
       const result = await CandidateUnderUserCollection.find({ email: email }).toArray();
       res.send(result);
     });
-    app.get("/candidate/under/users", async (req, res) => {
+    app.get("/CandiateUnderUser", async (req, res) => {
         const cursor = await CandidateUnderUserCollection.find().toArray();
         res.send(cursor);
     });
