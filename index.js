@@ -32,6 +32,7 @@ async function run() {
     const participateVoteCollection = client.db("dvsDB").collection("participate");
     const createPollCollection = client.db("dvsDB").collection("create-poll")
     const pollAnsCollection = client.db("dvsDB").collection("poll-ans");
+    const notificationCollection = client.db("dvsDB").collection("notification");
     const pollParticipateCollection = client
       .db("dvsDB")
       .collection("poll-participate");
@@ -193,6 +194,35 @@ async function run() {
       res.send(result);
     });
 
+
+    //Notification
+
+    app.post("/notification", async(req, res) => {
+      const notification = req.body;
+      console.log(notification);
+      const result = await notificationCollection.insertOne(notification);
+      res.send(result)
+    })
+
+    app.get("/notification", async(req, res) => {
+      const result = await notificationCollection.find().toArray();
+      res.send(result);
+  })
+
+  app.get("/notification/:email", async (req, res) => {
+    const email = req.params.email;
+    const query = { receiverEmail: email };
+    const result = await notificationCollection.find(query).toArray();
+    res.send(result);
+  });
+
+  app.delete("/notification/:email", async(req, res) => {
+    const email = req.params.email;
+    const query = { $or: [{ senderEmail: email }, { receiverEmail: email }] };
+    const result = await notificationCollection.deleteMany(query);
+    res.send(result);
+  })
+  
     //participate vote releted api
     app.get("/participate", async (req, res) => {
       const result = await participateVoteCollection.find().toArray();
