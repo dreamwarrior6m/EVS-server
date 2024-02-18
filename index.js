@@ -162,6 +162,14 @@ async function run() {
       res.send(cursor);
     });
 
+    app.delete("/candidate/under/:voteName", async (req, res) => {
+      const voteNameParam = req.params.voteName;
+      const cursor = {voteName: voteNameParam};
+      const result = await candidateCollection.deleteMany(cursor);
+      res.send(result);
+    });
+    
+
     app.get("/candidate/:id", async (req, res) => {
       const id = req.params.id;
       const result = await candidateCollection.findOne({
