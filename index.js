@@ -137,7 +137,7 @@ async function run() {
       const isExcits = await candidateCollection.findOne({
         $or: [
           { candidateEmail: req.body.candidateEmail },
-          { candidateID: req.body.candidateID },
+          // { candidateID: req.body.candidateID },
         ],
       });
       if (isExcits) {
@@ -161,6 +161,14 @@ async function run() {
       const cursor = await candidateCollection.find().toArray();
       res.send(cursor);
     });
+
+    app.delete("/candidate/under/:voteName", async (req, res) => {
+      const voteNameParam = req.params.voteName;
+      const cursor = {voteName: voteNameParam};
+      const result = await candidateCollection.deleteMany(cursor);
+      res.send(result);
+    });
+    
 
     app.get("/candidate/:id", async (req, res) => {
       const id = req.params.id;
