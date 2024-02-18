@@ -137,7 +137,7 @@ async function run() {
       const isExcits = await candidateCollection.findOne({
         $or: [
           { candidateEmail: req.body.candidateEmail },
-          { candidateID: req.body.candidateID },
+          // { candidateID: req.body.candidateID },
         ],
       });
       if (isExcits) {
