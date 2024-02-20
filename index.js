@@ -139,19 +139,9 @@ async function run() {
 
     //candidate releted api
     app.post("/candidate", async (req, res) => {
-      const isExcits = await candidateCollection.findOne({
-        $or: [
-          { candidateEmail: req.body.candidateEmail },
-          // { candidateID: req.body.candidateID },
-        ],
-      });
-      if (isExcits) {
-        return res.status(400).send({ message: "This Candidate is wrong" });
-      } else {
-        const newCandidate = req.body;
-        const result = await candidateCollection.insertOne(newCandidate);
-        res.send(result);
-      }
+      const newCandidate = req.body;
+      const result = await candidateCollection.insertOne(newCandidate);
+      res.send(result);
     });
 
     // candidate deleted
