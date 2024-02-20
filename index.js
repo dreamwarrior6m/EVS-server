@@ -162,6 +162,19 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/candidate/verify/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const doc = {
+        $set: {
+          isverify: "true",
+        },
+      };
+      const result = await candidateCollection.updateOne(query, doc);
+      res.send(result);
+    });
+
     app.get("/candidate", async (req, res) => {
       const cursor = await candidateCollection.find().toArray();
       res.send(cursor);
@@ -169,11 +182,10 @@ async function run() {
 
     app.delete("/candidate/under/:voteName", async (req, res) => {
       const voteNameParam = req.params.voteName;
-      const cursor = {voteName: voteNameParam};
+      const cursor = { voteName: voteNameParam };
       const result = await candidateCollection.deleteMany(cursor);
       res.send(result);
     });
-    
 
     app.get("/candidate/:id", async (req, res) => {
       const id = req.params.id;
@@ -298,11 +310,18 @@ async function run() {
       const result = await CandidateUnderUserCollection.insertOne(body);
       res.send(result);
     });
-    app.get("/candidate/under/:CandidateEmail", async (req, res) => {
-      const email = req.params.CandidateEmail;
+    app.get("/candidate/under/users/:voteName", async (req, res) => {
+      const paramsVoteName = req.params.voteName;
       const result = await CandidateUnderUserCollection.find({
-        CandidateEmail: email,
+        voteName: paramsVoteName,
       }).toArray();
+      res.send(result);
+    });
+
+    app.delete("/candidate/under/users/:voteName", async (req, res) => {
+      const voteNameParam = req.params.voteName;
+      const cursor = { voteName: voteNameParam };
+      const result = await CandidateUnderUserCollection.deleteMany(cursor);
       res.send(result);
     });
 
@@ -384,7 +403,7 @@ async function run() {
       const cursor = await createPollCollection.find().toArray();
       res.send(cursor);
     });
-    
+
     app.get("/create-poll/:id", async (req, res) => {
       const id = req.params.id;
       const result = await createPollCollection.findOne({
