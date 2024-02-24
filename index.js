@@ -251,15 +251,15 @@ async function run() {
     });
 
     // create-vor realeted api
-    app.patch("/create-vote/:name", async (req, res) => {
-      const data = req.params;
+    app.patch("/create-vote/:id", async (req, res) => {
+      const id = req.params.id;
       const data2 = req.body;
       console.log(data2);
-      const filter = { name: data.name };
+      const filter = { _id: new ObjectId(id) };
       console.log(filter);
       const updateDoc = {
         $set: {
-          position: data2.isSystemRunning,
+          position: data2.position,
         },
       };
       const result = await createVoteCollection.updateOne(filter, updateDoc);
