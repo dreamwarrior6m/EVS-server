@@ -1,13 +1,24 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://electronic-voting-system-beta.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rsjkylo.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -19,6 +30,27 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+//middlewares
+const logger = (req, res, next) => {
+  console.log("log: info", req.method, req.url);
+  next();
+};
+
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+  // console.log("token in the middleware", token);
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 async function run() {
   try {
@@ -43,17 +75,40 @@ async function run() {
       .db("dvsDB")
       .collection("poll-participate");
 
+    // auth related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log("user for token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
+
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("logging out", user);
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+    });
+
+    // setvices related api
     app.post("/users", async (req, res) => {
       const newUser = req.body;
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     });
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
-    app.get("/users/:email", async (req, res) => {
+    app.get("/users/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
@@ -102,7 +157,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/users/:id", async (req, res) => {
+    app.get("/users/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
     });
@@ -165,7 +220,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/candidate", async (req, res) => {
+    app.get("/candidate", verifyToken, async (req, res) => {
       const cursor = await candidateCollection.find().toArray();
       res.send(cursor);
     });
@@ -177,7 +232,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/candidate/:id", async (req, res) => {
+    app.get("/candidate/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await candidateCollection.findOne({
         _id: new ObjectId(id),
@@ -218,12 +273,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/notification", async (req, res) => {
+    app.get("/notification", verifyToken, async (req, res) => {
       const result = await notificationCollection.find().toArray();
       res.send(result);
     });
 
-    app.get("/notification/:email", async (req, res) => {
+    app.get("/notification/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { receiverEmail: email };
       const result = await notificationCollection.find(query).toArray();
@@ -238,7 +293,7 @@ async function run() {
     });
 
     //participate vote releted api
-    app.get("/participate", async (req, res) => {
+    app.get("/participate", verifyToken, async (req, res) => {
       const result = await participateVoteCollection.find().toArray();
       res.send(result);
     });
@@ -286,6 +341,8 @@ async function run() {
 
     app.get("/create-vote", async (req, res) => {
       const cursor = await createVoteCollection.find().toArray();
+      console.log("token owner inof", req.user);
+      // console.log(req.query.email)
       res.send(cursor);
     });
     app.get("/create-vote/:id", async (req, res) => {
@@ -300,13 +357,17 @@ async function run() {
       const result = await CandidateUnderUserCollection.insertOne(body);
       res.send(result);
     });
-    app.get("/candidate/under/users/:voteName", async (req, res) => {
-      const paramsVoteName = req.params.voteName;
-      const result = await CandidateUnderUserCollection.find({
-        voteName: paramsVoteName,
-      }).toArray();
-      res.send(result);
-    });
+    app.get(
+      "/candidate/under/users/:voteName",
+      verifyToken,
+      async (req, res) => {
+        const paramsVoteName = req.params.voteName;
+        const result = await CandidateUnderUserCollection.find({
+          voteName: paramsVoteName,
+        }).toArray();
+        res.send(result);
+      }
+    );
 
     app.delete("/candidate/under/users/:voteName", async (req, res) => {
       const voteNameParam = req.params.voteName;
@@ -315,7 +376,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/CandiateUnderUser", async (req, res) => {
+    app.get("/CandiateUnderUser", verifyToken, async (req, res) => {
       const cursor = await CandidateUnderUserCollection.find().toArray();
       res.send(cursor);
     });
@@ -452,7 +513,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/poll-participate", async (req, res) => {
+    app.get("/poll-participate", verifyToken, async (req, res) => {
       const cursor = await pollParticipateCollection.find().toArray();
       res.send(cursor);
     });
@@ -491,21 +552,24 @@ async function run() {
     // });
 
     // Backend code
-    app.get("/paginatedUsers", async (req, res) => {
+    app.get("/paginatedUsers", verifyToken, async (req, res) => {
       try {
         const allUser = await userCollection.find({}).toArray();
         const page = parseInt(req.query.page);
         const limit = parseInt(req.query.limit);
         const searchName = req.query.searchName;
-    
-        const filteredUsers = allUser.filter(user => {
-          return !searchName || user.name.toLowerCase().includes(searchName.toLowerCase());
+
+        const filteredUsers = allUser.filter((user) => {
+          return (
+            !searchName ||
+            user.name.toLowerCase().includes(searchName.toLowerCase())
+          );
         });
         const startIndex = (page - 1) * limit;
         const lastIndex = page * limit;
         const results = {};
         results.totalUser = filteredUsers.length;
-        results.pageCount = Math.ceil(filteredUsers.length / limit)
+        results.pageCount = Math.ceil(filteredUsers.length / limit);
         if (lastIndex < filteredUsers.length) {
           results.next = {
             page: page + 1,
@@ -516,7 +580,7 @@ async function run() {
             page: page - 1,
           };
         }
-    
+
         results.result = filteredUsers.slice(startIndex, lastIndex);
         res.json(results);
       } catch (error) {
@@ -524,7 +588,6 @@ async function run() {
         res.status(500).json({ error: "Internal Server Error" });
       }
     });
-    
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
