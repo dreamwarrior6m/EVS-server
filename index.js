@@ -340,9 +340,13 @@ async function run() {
     });
 
     app.get("/create-vote", async (req, res) => {
-      const cursor = await createVoteCollection.find().toArray();
-      console.log("token owner inof", req.user);
-      // console.log(req.query.email)
+      const filter = req.query;
+      // console.log(filter);
+      const query = {
+        OrganizatonName: {$regex: filter.search, $options: 'i'},
+        // name: {$regex: filter.search, $options: 'i'}
+      }
+      const cursor = await createVoteCollection.find(query).toArray();
       res.send(cursor);
     });
     app.get("/create-vote/:id", async (req, res) => {
