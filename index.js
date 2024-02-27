@@ -273,12 +273,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/notification", verifyToken, async (req, res) => {
+    app.get("/notification", async (req, res) => {
       const result = await notificationCollection.find().toArray();
       res.send(result);
     });
 
-    app.get("/notification/:email", verifyToken, async (req, res) => {
+    app.get("/notification/:email", async (req, res) => {
       const email = req.params.email;
       const query = { receiverEmail: email };
       const result = await notificationCollection.find(query).toArray();
@@ -347,6 +347,11 @@ async function run() {
         // name: {$regex: filter.search, $options: 'i'}
       }
       const cursor = await createVoteCollection.find(query).toArray();
+      res.send(cursor);
+    });
+
+    app.get("/create-vote", async (req, res) => {
+      const cursor = await createVoteCollection.find().toArray();
       res.send(cursor);
     });
     app.get("/create-vote/:id", async (req, res) => {
