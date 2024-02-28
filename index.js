@@ -58,6 +58,7 @@ async function run() {
     // await client.connect();
 
     const userCollection = client.db("dvsDB").collection("users");
+    const userFeedbackCollection= client.db("dvsDB").collection("feedbacks");
     const candidateCollection = client.db("dvsDB").collection("candidate");
     const createVoteCollection = client.db("dvsDB").collection("create-vote");
     const CandidateUnderUserCollection = client
@@ -596,6 +597,11 @@ async function run() {
         console.error("Error fetching paginated users:", error);
         res.status(500).json({ error: "Internal Server Error" });
       }
+    });
+    app.post("/feedback", async (req, res) => {
+      const newFeedback = req.body;
+      const result = await userFeedbackCollection.insertOne(newFeedback);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
