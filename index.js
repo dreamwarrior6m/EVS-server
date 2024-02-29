@@ -454,10 +454,22 @@ async function run() {
 
     // create Poll
 
+    // app.post("/create-poll", async (req, res) => {
+    //   const newCreatePoll = req.body;
+    //   const result = await createPollCollection.insertOne(newCreatePoll);
+    //   res.send(result);
+    // });
     app.post("/create-poll", async (req, res) => {
-      const newCreatePoll = req.body;
-      const result = await createPollCollection.insertOne(newCreatePoll);
-      res.send(result);
+      const isExcits = await createPollCollection.findOne({
+        userName: req.body.userName,
+      });
+      if (isExcits) {
+        return res.status(400).send({ message: "This user name  is wrong" });
+      } else {
+        const newPoll = req.body;
+        const result = await createPollCollection.insertOne(newPoll);
+        res.send(result);
+      }
     });
 
     app.get("/create-poll", async (req, res) => {
