@@ -58,6 +58,7 @@ async function run() {
     // await client.connect();
 
     const userCollection = client.db("dvsDB").collection("users");
+    const userFeedbackCollection= client.db("dvsDB").collection("feedbacks");
     const candidateCollection = client.db("dvsDB").collection("candidate");
     const createVoteCollection = client.db("dvsDB").collection("create-vote");
     const CandidateUnderUserCollection = client
@@ -453,10 +454,22 @@ async function run() {
 
     // create Poll
 
+    // app.post("/create-poll", async (req, res) => {
+    //   const newCreatePoll = req.body;
+    //   const result = await createPollCollection.insertOne(newCreatePoll);
+    //   res.send(result);
+    // });
     app.post("/create-poll", async (req, res) => {
-      const newCreatePoll = req.body;
-      const result = await createPollCollection.insertOne(newCreatePoll);
-      res.send(result);
+      const isExcits = await createPollCollection.findOne({
+        userName: req.body.userName,
+      });
+      if (isExcits) {
+        return res.status(400).send({ message: "This user name  is wrong" });
+      } else {
+        const newPoll = req.body;
+        const result = await createPollCollection.insertOne(newPoll);
+        res.send(result);
+      }
     });
 
     app.get("/create-poll", async (req, res) => {
@@ -596,6 +609,15 @@ async function run() {
         console.error("Error fetching paginated users:", error);
         res.status(500).json({ error: "Internal Server Error" });
       }
+    });
+    app.post("/feedback", async (req, res) => {
+      const newFeedback = req.body;
+      const result = await userFeedbackCollection.insertOne(newFeedback);
+      res.send(result);
+    });
+    app.get("/feedback", async (req, res) => {
+      const result = await userFeedbackCollection.find().toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
