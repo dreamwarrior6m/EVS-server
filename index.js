@@ -339,6 +339,11 @@ async function run() {
       }
     });
 
+    // app.get("/create-vote", async (req, res) => {
+    //   const cursor = await createVoteCollection.find().toArray();
+    //   res.send(cursor);
+    // });
+
     app.get("/create-vote", async (req, res) => {
       const filter = req.query;
       // console.log(filter);
@@ -350,10 +355,7 @@ async function run() {
       res.send(cursor);
     });
 
-    app.get("/create-vote", async (req, res) => {
-      const cursor = await createVoteCollection.find().toArray();
-      res.send(cursor);
-    });
+    
     app.get("/create-vote/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
