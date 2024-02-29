@@ -74,6 +74,7 @@ async function run() {
     const pollParticipateCollection = client
       .db("dvsDB")
       .collection("poll-participate");
+      const AdminFeedbackCollection = client.db("dvsDB").collection("admin-feedback");
 
     // auth related api
     app.post("/jwt", async (req, res) => {
@@ -97,7 +98,7 @@ async function run() {
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
-    // setvices related api
+    // services related api
     app.post("/users", async (req, res) => {
       const newUser = req.body;
       const result = await userCollection.insertOne(newUser);
@@ -343,9 +344,9 @@ async function run() {
       const filter = req.query;
       // console.log(filter);
       const query = {
-        OrganizatonName: {$regex: filter.search, $options: 'i'},
+        OrganizatonName: { $regex: filter.search, $options: "i" },
         // name: {$regex: filter.search, $options: 'i'}
-      }
+      };
       const cursor = await createVoteCollection.find(query).toArray();
       res.send(cursor);
     });
@@ -524,6 +525,18 @@ async function run() {
 
     app.get("/poll-participate", verifyToken, async (req, res) => {
       const cursor = await pollParticipateCollection.find().toArray();
+      res.send(cursor);
+    });
+
+    // Admin-Feedback 
+    app.post("/admin-feedback", async (req, res) => {
+      const feedbackReceive = req.body;
+      const result = await AdminFeedbackCollection.insertOne(feedbackReceive);
+      res.send(result);
+    });
+
+    app.get("/admin-feedback", async (req, res) => {
+      const cursor = await AdminFeedbackCollection.find().toArray();
       res.send(cursor);
     });
 
