@@ -603,6 +603,10 @@ async function run() {
       const result = await userFeedbackCollection.insertOne(newFeedback);
       res.send(result);
     });
+    app.get("/feedback", async (req, res) => {
+      const result = await userFeedbackCollection.find().toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
