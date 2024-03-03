@@ -317,11 +317,27 @@ async function run() {
       const updateDoc = {
         $set: {
           position: data2.position,
+          isFinished: data2.isFinished,
         },
       };
       const result = await createVoteCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
+    // app.patch("/create-vote/:ida", async (req, res) => {
+    //   const id = req.params.ida;
+    //   const data2 = req.body;
+    //   console.log(data2);
+    //   const filter = { _id: new ObjectId(id) };
+    //   console.log(filter);
+    //   const updateDoc = {
+    //     $set: {
+    //       isFinished: data2.isFinished,
+    //     },
+    //   };
+    //   const result = await createVoteCollection.updateOne(filter, updateDoc);
+    //   res.send(result);
+    // });
 
     // app.post("/create-vote", async (req, res) => {
     //   const newCreateVote = req.body;
