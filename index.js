@@ -58,7 +58,7 @@ async function run() {
     // await client.connect();
 
     const userCollection = client.db("dvsDB").collection("users");
-    const userFeedbackCollection= client.db("dvsDB").collection("feedbacks");
+    const userFeedbackCollection = client.db("dvsDB").collection("feedbacks");
     const candidateCollection = client.db("dvsDB").collection("candidate");
     const createVoteCollection = client.db("dvsDB").collection("create-vote");
     const CandidateUnderUserCollection = client
@@ -75,7 +75,9 @@ async function run() {
     const pollParticipateCollection = client
       .db("dvsDB")
       .collection("poll-participate");
-      const AdminFeedbackCollection = client.db("dvsDB").collection("admin-feedback");
+    const AdminFeedbackCollection = client
+      .db("dvsDB")
+      .collection("admin-feedback");
 
     // auth related api
     app.post("/jwt", async (req, res) => {
@@ -163,21 +165,6 @@ async function run() {
       const id = req.params.id;
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
     });
-
-    // app.patch("/candidate/:id", async (req, res) => {
-    //   const data = req.params;
-    //   const data2 = req.body;
-    //   // console.log(data2)
-    //   const filter = { _id: new ObjectId(data.id) };
-    //   // console.log(filter);
-    //   const updateDoc = {
-    //     $set: {
-    //       voteCount: data2.updateVoteCount2,
-    //     },
-    //   };
-    //   const result = await candidateCollection.updateOne(filter, updateDoc);
-    //   res.send(result);
-    // });
 
     app.patch("/users/:id", async (req, res) => {
       const data = req.params;
@@ -324,26 +311,6 @@ async function run() {
       res.send(result);
     });
 
-    // app.patch("/create-vote/:ida", async (req, res) => {
-    //   const id = req.params.ida;
-    //   const data2 = req.body;
-    //   console.log(data2);
-    //   const filter = { _id: new ObjectId(id) };
-    //   console.log(filter);
-    //   const updateDoc = {
-    //     $set: {
-    //       isFinished: data2.isFinished,
-    //     },
-    //   };
-    //   const result = await createVoteCollection.updateOne(filter, updateDoc);
-    //   res.send(result);
-    // });
-
-    // app.post("/create-vote", async (req, res) => {
-    //   const newCreateVote = req.body;
-    //   const result = await createVoteCollection.insertOne(newCreateVote);
-    //   res.send(result);
-    // });
     app.post("/create-vote", async (req, res) => {
       const isExcits = await createVoteCollection.findOne({
         name: req.body.name,
@@ -357,11 +324,6 @@ async function run() {
       }
     });
 
-    // app.get("/create-vote", async (req, res) => {
-    //   const cursor = await createVoteCollection.find().toArray();
-    //   res.send(cursor);
-    // });
-
     app.get("/create-vote", async (req, res) => {
       const filter = req.query;
       // console.log(filter);
@@ -373,7 +335,6 @@ async function run() {
       res.send(cursor);
     });
 
-    
     app.get("/create-vote/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -559,7 +520,7 @@ async function run() {
       res.send(cursor);
     });
 
-    // Admin-Feedback 
+    // Admin-Feedback
     app.post("/admin-feedback", async (req, res) => {
       const feedbackReceive = req.body;
       const result = await AdminFeedbackCollection.insertOne(feedbackReceive);
@@ -571,38 +532,26 @@ async function run() {
       res.send(cursor);
     });
 
-    // pagination
-    // app.get("/paginatedUsers", async (req, res) => {
-    //   try {
-    //     const allUser = await userCollection.find({}).toArray();
-    //     const page = parseInt(req.query.page);
-    //     const limit = parseInt(req.query.limit);
-
-    //     const startIndex = (page - 1) * limit;
-    //     const lastIndex = page * limit;
-    //     const results = {};
-    //     results.totalUser = allUser.length;
-    //     results.pageCount = Math.ceil(allUser.length / limit);
-
-    //     if (lastIndex < allUser.length) {
-    //       results.next = {
-    //         page: page + 1,
-    //       };
-    //     }
-
-    //     if (startIndex > 0) {
-    //       results.prev = {
-    //         page: page - 1,
-    //       };
-    //     }
-
-    //     results.result = allUser.slice(startIndex, lastIndex);
-    //     res.json(results);
-    //   } catch (error) {
-    //     console.error("Error fetching paginated users:", error);
-    //     res.status(500).json({ error: "Internal Server Error" });
-    //   }
+    app.get("/admin-feedback/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await AdminFeedbackCollection.findOne(query);
+      res.send(result);
+    });
+    // app.delete("/create-poll/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await createPollCollection.deleteOne(query);
+    //   res.send(result);
     // });
+
+    app.delete("/admin-feedback/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      // console.log(query)
+      const result = await AdminFeedbackCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Backend code
     app.get("/paginatedUsers", verifyToken, async (req, res) => {
